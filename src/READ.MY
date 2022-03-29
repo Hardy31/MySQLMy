@@ -1,0 +1,181 @@
+
+ПОсле переустановки MYSQL
+https://www.youtube.com/watch?v=4RIKvMgnxpE
+sudo apt-get install mysql-server
+sudo apt-get install mysql-client
+
+
+
+Вошел !
+~$ sudo mysql -u root
+
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 2
+Server version: 5.7.37-0ubuntu0.18.04.1 (Ubuntu)
+
+
+mysql> CREATE DATABASE myTestDB;
+Query OK, 1 row affected (0,05 sec)
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| myTestDB           |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+5 rows in set (0,01 sec)
+
+mysql> USE myTestDB;
+USE myTestDB;
+
+mysql> CREATE TABLE jc_street (
+    ->     street_code INTEGER NOT NULL,
+    ->     street_name VARCHAR(300),
+    ->     PRIMARY KEY (street_code)
+    -> );
+Query OK, 0 rows affected (0,06 sec)
+
+mysql> CREATE TABLE jc_country_struct(
+    ->     area_id CHAR(12) NOT NULL,
+    ->     area_name VARCHAR(200),
+    ->     PRIMARY KEY (area_id)
+    -> );
+Query OK, 0 rows affected (0,02 sec)
+
+mysql> SHOW TABLES;
++--------------------+
+| Tables_in_myTestDB |
++--------------------+
+| jc_country_struct  |
+| jc_street          |
++--------------------+
+2 rows in set (0,00 sec)
+
+
+
+
+mysql> exit
+Bye
+alex@alexPC:~$
+
+или
+mysql> quit
+Bye
+alex@alexPC:~$
+
+
+
+
+СОЗДАНИЕ ПОЛЬЗОВАТЕЛЯ и ПРИВИЛЕГИЙ
+ОЧЕНЬ ПОМОГЛО ВОТ ЭТО ВИДИЛ!!!
+https://www.youtube.com/watch?v=3RX62wvvroI&list=PL5KGx5_ykLX8NrmlQTutJ__TH7pnC4qXB&index=14
+или здесь.
+http://snakeproject.ru/rubric/article.php?art=mysql_users
+
+
+Создание Пользователя
+admin c с паролем 12345
+
+
+
+mysql> SELECT user, host FROM mysql.user;
++------------------+-----------+
+| user             | host      |
++------------------+-----------+
+| debian-sys-maint | localhost |
+| mysql.session    | localhost |
+| mysql.sys        | localhost |
+| root             | localhost |
++------------------+-----------+
+4 rows in set (0,00 sec)
+
+mysql> CREATE USER 'admin@localhost';
+Query OK, 0 rows affected (0,00 sec)
+
+mysql> SELECT user, host FROM mysql.user;
++------------------+-----------+
+| user             | host      |
++------------------+-----------+
+| admin@localhost  | %         |
+| debian-sys-maint | localhost |
+| mysql.session    | localhost |
+| mysql.sys        | localhost |
+| root             | localhost |
++------------------+-----------+
+5 rows in set (0,00 sec)
+
+mysql> SET PASSWORD FOR 'admin@localhost' = PASSWORD('12345');
+Query OK, 0 rows affected, 1 warning (0,00 sec)
+
+mysql> CREATE USER 'admin2@%' IDENTIFIED BY '54321';
+Query OK, 0 rows affected (0,00 sec)
+
+mysql> SELECT user, host FROM mysql.user;
++------------------+-----------+
+| user             | host      |
++------------------+-----------+
+| admin2@%         | %         |
+| admin@localhost  | %         |
+| debian-sys-maint | localhost |
+| mysql.session    | localhost |
+| mysql.sys        | localhost |
+| root             | localhost |
++------------------+-----------+
+6 rows in set (0,00 sec)
+
+
+
+
+Раздача полных привелегий для admin
+в базе myTestDB  во всех таблицах
+
+GRANT ALL PRIVILEGES
+        ON myTestDB. *
+        TO 'admin@localhost';
+
+mysql> GRANT ALL PRIVILEGES ON myTestDB.* TO 'admin@localhost';
+Query OK, 0 rows affected (0,00 sec)
+
+
+Раздача  привелегий на операции SELECT, UPDATE, DELETE для admin2
+в базе myTestDB  во всех таблицах
+
+GRANT SELECT, UPDATE, DELETE ON myTestDB.* TO 'admin2@%';
+
+mysql> GRANT SELECT, UPDATE, DELETE ON myTestDB.* TO 'admin2@%';
+Query OK, 0 rows affected (0,00 sec)
+
+
+входим под вновь созданным пользователем admin 12345 c полными привелегиями
+mysql -u admin@localhost -p
+
+alex@alexPC:~$ mysql -u admin@localhost -p
+Enter password:
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 9
+Server version: 5.7.37-0ubuntu0.18.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2022, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+
+
+
+Особо обратить внимание на
+Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/myTestDB?useSSL=false","admin@localhost","12345");
+
+ а именно на это
+ ?useSSL=false
+
+
